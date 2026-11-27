@@ -1,0 +1,112 @@
+{
+  "name": "Website Uptime Monitor",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        0
+      ],
+      "id": "41007459-6848-4632-af25-5a894bbf74c6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "const websites = [\n  \"https://jpcdubai.com/\",\n  \"https://jumarental.com/\",\n  \"https://onlineignou1.neevedu.com/\",\n];\n\nreturn websites.map(url => ({ json: { url } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        0
+      ],
+      "id": "610978d3-aeb5-49ea-9a51-adb94617ecd6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -192,
+        0
+      ],
+      "id": "6d9ab5f3-92d9-45c8-9d0f-5d086bb5df20",
+      "name": "HTTP Request",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = $input.all();\nconst sites = $('Code in JavaScript').all();\n\nconst ok = [];\nconst down = [];\n\nresults.forEach((item, i) => {\n  const url = sites[i] ? sites[i].json.url : 'Unknown';\n  const code = item.json.statusCode;\n  const err = item.json.error;\n\n  if (err) {\n    const msg = typeof err === 'string' ? err : (err.message || 'Connection error');\n    down.push(`DOWN  ${url}  -> ${msg}`);\n  } else if (code && (code < 200 || code >= 400)) {\n    down.push(`DOWN  ${url}  -> Status ${code}`);\n  } else {\n    ok.push(`OK    ${url}  (${code || 'OK'})`);\n  }\n});\n\nconst date = $now.toFormat('dd-MM-yyyy hh:mm a');\nconst total = results.length;\n\nconst subject = down.length\n  ? `ALERT: ${down.length} website(s) DOWN - ${date}`\n  : `All ${total} websites OK - ${date}`;\n\nconst report =\n  `Website Check Report\\nDate: ${date}\\n\\n` +\n  `Total: ${total} | Up: ${ok.length} | Down: ${down.length}\\n\\n` +\n  (down.length ? `--- PROBLEM WALI SITES ---\\n${down.join('\\n')}\\n\\n` : '') +\n  `--- THEEK CHAL RAHI SITES ---\\n${ok.join('\\n') || '(none)'}`;\n\nreturn [{ json: { total, upCount: ok.length, downCount: down.length, subject, report } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "c13039c4-c10d-4f6e-be49-10fcdca097da",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3e517fdd-24fd-4246-862b-d3fe2f0f7d23",
+  "meta": {
+    "instanceId": "487c24f080fc29de786ac4af56db45a503e82944610349c44a1eefab4b282ca2"
+  },
+  "nodeGroups": [],
+  "id": "gdWbeGyA4blbQTp3",
+  "tags": []
+}
