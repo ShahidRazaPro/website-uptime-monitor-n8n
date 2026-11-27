@@ -2,7 +2,7 @@
 
 A simple, no-code/low-code automation built with **[n8n](https://n8n.io)** that checks whether a list of websites is online and produces a single status report showing which sites are **UP** and which are **DOWN**.
 
-![Workflow](screenshot.png)
+![Workflow](workflow.png)
 
 ---
 
